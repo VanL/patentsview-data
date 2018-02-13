@@ -26,9 +26,14 @@ def unpack(combined_filename):
         with open(filename, 'a') as outfile:
           line = normalize(line)
           inserts = line.replace("),(", "),\n(").split('\n')
-          _ = outfile.write('%s VALUES\n%s\n' % tuple([sl.strip() for sl in inserts[0].split('VALUES')]))
-          _ = outfile.write('\n'.join(inserts[1:]))
-          _ = outfile.write('\n')
+          firstline_split = [sl.strip() for sl in inserts[0].split(' VALUES (', 1)]
+          if len(firstline_split) != 2:
+            print(inserts[:2])
+            raise ValueError('Err: Could not convert arguments!')
+          else:
+            _ = outfile.write('%s VALUES\n(%s\n' % tuple(firstline_split))
+            _ = outfile.write('\n'.join(inserts[1:]))
+            _ = outfile.write('\n')
       else:
         _ = adminfile.write(normalize(line) + '\n')
 
