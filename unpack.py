@@ -1,9 +1,7 @@
 import sys
 import os
 import re
-import unicodedata
-
-normalize = lambda line: unicodedata.normalize('NFKC', line)
+from utils import normalize, get_input, check_file
 
 def unpack(combined_filename):
   last_filename = ''
@@ -37,45 +35,14 @@ def unpack(combined_filename):
       else:
         _ = adminfile.write(normalize(line) + '\n')
 
-def _check_file(filename):
-  err = None
-  if not os.path.exists(filename):
-    err = f"File {filename} doesn't appear to exist."
-  if not filename.endswith('.sql'):
-    err = f"File {filename} doesn't end with .sql."
-  if err:
-    print(err)
-    return False
-  else:
-    return True
-
-def _get_input():
-  most_likely = ''
-  files = [f for f in os.listdir('.') if f.endswith('.sql')]
-  if len(files) == 1: most_likely = files[0]
-  else:
-    probables = [fn for fn in files if re.match('\w*_[0-9-]*\.sql', fn)]
-    if probables: most_likely = probables[0]
-  if most_likely:
-    most_likely_msg = f'(Enter to use {most_likely})'
-  else:
-    most_likely_msg = ''
-  msg = f'Input file to split {most_likely_msg}:'  
-  input_filename = input(msg)
-  if not input_filename:
-    if most_likely: input_filename = most_likely
-  if _check_file(input_filename):
-    return input_filename
-  else:
-    return None
 
 if __name__ == '__main__':
   if len(sys.argv) == 2:
     input_filename = sys.argv[1]
-    if _check_file(input_filename):
+    if check_file(input_filename):
       print(f'Unpacking {input_filename}...')
       unpack(input_filename)
-  input_filename = _get_input()
+  input_filename = get_input(probables_regex='\w*_[0-9-]*\.sql')
   if input_filename: unpack(input_filename)
   else: print('Quitting...')
 
